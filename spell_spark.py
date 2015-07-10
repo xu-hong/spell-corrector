@@ -233,12 +233,15 @@ if __name__ == '__main__':
 
     sc = SparkContext(appName="spell_corrector")
 
-    corp = sc.textFile("code/corpse.txt", 4).cache()
-    WORDS = corp.flatMap(lambda line: re.findall(r'[a-z]+', line.lower()))
-    NWORDS_T = WORDS.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y).collect()
+    corpseRDD = sc.textFile("code/spell/corpse.text", 4)
+
+    wordsRDD = corpseRDD.flatMap(lambda line: re.findall(r'[a-z]+', line.lower()))
+    countwordsRDD = wordsRDD.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y)
+
+    countwords = countwordsRDD.collect()
 
     NWORDS = collections.defaultdict(lambda: 1)
-    NWORDS.update(dict(NWORDS_T))
+    NWORDS.update(dict(countwords))
     
     #NWORDS = sc.broadcast(NWORDS)
     #print type(NWORDS)
